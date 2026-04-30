@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://flight-booking-system-production-8508.up.railway.app',
+  baseURL: 'https://flight-booking-system-production-8508.up.railway.app',
 });
 
 // Attach token to every request automatically
