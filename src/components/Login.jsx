@@ -35,7 +35,8 @@ export default function Login({ onLogin }) {
     }
     setLoading(false);
   };
-  const [showPassword, setShowPassword] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
 
   return (
     <div className="auth-wrapper">
@@ -71,7 +72,7 @@ export default function Login({ onLogin }) {
   <div className="password-input">
     <input
       name="password"
-      type={showPassword ? "text" : "password"}
+      type={showLoginPassword ? "text" : "password"}
       placeholder="••••••••"
       value={form.password}
       onChange={handleChange}
@@ -80,9 +81,9 @@ export default function Login({ onLogin }) {
     <button
       type="button"
       className="password-toggle"
-      onClick={() => setShowPassword(!showPassword)}
+      onClick={() => setShowLoginPassword(!showLoginPassword)}
     >
-      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+      {showLoginPassword ? <EyeOff size={20} /> : <Eye size={20} />}
     </button>
   </div>
 </div>
@@ -112,7 +113,7 @@ export default function Login({ onLogin }) {
   <div className="password-input">
     <input
       name="password"
-      type={showPassword ? "text" : "password"}
+      type={showRegisterPassword ? "text" : "password"}
       placeholder="••••••••"
       value={form.password}
       onChange={handleChange}
@@ -121,9 +122,9 @@ export default function Login({ onLogin }) {
     <button
       type="button"
       className="password-toggle"
-      onClick={() => setShowPassword(!showPassword)}
+      onClick={() => setShowRegisterPassword(!showRegisterPassword)}
     >
-      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+      {showRegisterPassword ? <EyeOff size={20} /> : <Eye size={20} />}
     </button>
   </div>
 </div>
