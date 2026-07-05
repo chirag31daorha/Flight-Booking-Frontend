@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AuthService } from "../services/services";
+import { Eye, EyeOff} from "lucide-react";
 
 export default function Login({ onLogin }) {
   const [tab, setTab] = useState("login");
