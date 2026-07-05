@@ -4,16 +4,39 @@ import { Eye, EyeOff} from "lucide-react";
 
 export default function Login({ onLogin }) {
   const [tab, setTab] = useState("login");
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "USER" });
+  const [loginForm, setLoginForm] = useState({
+  email: "",
+  password: ""
+});
+
+const [registerForm, setRegisterForm] = useState({
+  name: "",
+  email: "",
+  password: "",
+  role: "USER"
+});
   const [msg, setMsg] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleLoginChange = (e) => {
+  setLoginForm({
+    ...loginForm,
+    [e.target.name]: e.target.value,
+  });
+};
+
+const handleRegisterChange = (e) => {
+  setRegisterForm({
+    ...registerForm,
+    [e.target.name]: e.target.value,
+  });
+};
+
 
   const handleLogin = async () => {
     setLoading(true); setMsg(null);
     try {
-      const res = await AuthService.login({ email: form.email, password: form.password });
+      const res = await AuthService.login({ email: loginForm.email, password: loginForm.password });
       const token = res.data.data;
       localStorage.setItem("jwt_token", token);
       onLogin();
@@ -26,10 +49,10 @@ export default function Login({ onLogin }) {
   const handleRegister = async () => {
     setLoading(true); setMsg(null);
     try {
-      await AuthService.register(form);
+      await AuthService.register(registerForm);
       setMsg({ type: "success", text: "Account created! Please login." });
       setTab("login");
-      setForm({ ...form, name: "", password: "" });
+      setRegisterForm({ ...registerForm, name: "", password: "" });
     } catch (e) {
       setMsg({ type: "error", text: e.response?.data?.message || "Registration failed" });
     }
@@ -64,7 +87,7 @@ export default function Login({ onLogin }) {
             <p className="auth-sub">Enter your credentials to continue</p>
             <div className="form-group" style={{ marginBottom: 14 }}>
               <label>Email</label>
-              <input name="email" type="email" placeholder="you@example.com" value={form.email} onChange={handleChange} />
+              <input name="email" type="email" placeholder="you@example.com" value={loginForm.email} onChange={handleLoginChange} />
             </div>
             <div className="form-group" style={{ marginBottom: 20 }}>
   <label>Password</label>
@@ -74,8 +97,8 @@ export default function Login({ onLogin }) {
       name="password"
       type={showLoginPassword ? "text" : "password"}
       placeholder="••••••••"
-      value={form.password}
-      onChange={handleChange}
+      value={loginForm.password}
+      onChange={handleLoginChange}
     />
 
     <button
@@ -101,11 +124,11 @@ export default function Login({ onLogin }) {
             <p className="auth-sub">Fill in your details to get started</p>
             <div className="form-group" style={{ marginBottom: 14 }}>
               <label>Full Name</label>
-              <input name="name" placeholder="Ashu" value={form.name} onChange={handleChange} />
+              <input name="name" placeholder="Ashu" value={registerForm.name} onChange={handleRegisterChange} />
             </div>
             <div className="form-group" style={{ marginBottom: 14 }}>
               <label>Email</label>
-              <input name="email" type="email" placeholder="you@example.com" value={form.email} onChange={handleChange} />
+              <input name="email" type="email" placeholder="you@example.com" value={registerForm.email} onChange={handleRegisterChange} />
             </div>
            <div className="form-group" style={{ marginBottom: 14 }}>
   <label>Password</label>
@@ -115,8 +138,8 @@ export default function Login({ onLogin }) {
       name="password"
       type={showRegisterPassword ? "text" : "password"}
       placeholder="••••••••"
-      value={form.password}
-      onChange={handleChange}
+      value={registerForm.password}
+      onChange={handleRegisterChange}
     />
 
     <button
@@ -130,7 +153,7 @@ export default function Login({ onLogin }) {
 </div>
             <div className="form-group" style={{ marginBottom: 20 }}>
               <label>Role</label>
-              <select name="role" value={form.role} onChange={handleChange}>
+              <select name="role" value={registerForm.role} onChange={handleRegisterChange}>
                 <option value="USER">User</option>
                 <option value="ADMIN">Admin</option>
               </select>
