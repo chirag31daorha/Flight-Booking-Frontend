@@ -34,6 +34,7 @@ export default function Login({ onLogin }) {
     }
     setLoading(false);
   };
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="auth-wrapper">
@@ -65,7 +66,10 @@ export default function Login({ onLogin }) {
             </div>
             <div className="form-group" style={{ marginBottom: 20 }}>
               <label>Password</label>
-              <input name="password" type="password" placeholder="••••••••" value={form.password} onChange={handleChange} />
+              <div className="form-group" style={{ marginBottom: 20 }}>
+                <input name="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={form.password} onChange={handleChange} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "🙈" : "👁️"}</button>
+              </div>
             </div>
             <button className="btn btn-primary" style={{ width: "100%" }} onClick={handleLogin} disabled={loading}>
               {loading ? "Logging in..." : "Login"}
@@ -87,10 +91,10 @@ export default function Login({ onLogin }) {
               <label>Email</label>
               <input name="email" type="email" placeholder="you@example.com" value={form.email} onChange={handleChange} />
             </div>
-            <div className="form-group" style={{ marginBottom: 14 }}>
-              <label>Password</label>
-              <input name="password" type="password" placeholder="••••••••" value={form.password} onChange={handleChange} />
-            </div>
+            <div className="form-group" style={{ marginBottom: 20 }}>
+                <input name="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={form.password} onChange={handleChange} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "🙈" : "👁️"}</button>
+              </div>
             <div className="form-group" style={{ marginBottom: 20 }}>
               <label>Role</label>
               <select name="role" value={form.role} onChange={handleChange}>
