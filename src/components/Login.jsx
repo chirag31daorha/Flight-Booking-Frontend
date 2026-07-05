@@ -65,12 +65,26 @@ export default function Login({ onLogin }) {
               <input name="email" type="email" placeholder="you@example.com" value={form.email} onChange={handleChange} />
             </div>
             <div className="form-group" style={{ marginBottom: 20 }}>
-              <label>Password</label>
-              <div className="form-group" style={{ marginBottom: 20 }}>
-                <input name="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={form.password} onChange={handleChange} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "🙈" : "👁️"}</button>
-              </div>
-            </div>
+  <label>Password</label>
+
+  <div className="password-input">
+    <input
+      name="password"
+      type={showPassword ? "text" : "password"}
+      placeholder="••••••••"
+      value={form.password}
+      onChange={handleChange}
+    />
+
+    <button
+      type="button"
+      className="password-toggle"
+      onClick={() => setShowPassword(!showPassword)}
+    >
+      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+    </button>
+  </div>
+</div>
             <button className="btn btn-primary" style={{ width: "100%" }} onClick={handleLogin} disabled={loading}>
               {loading ? "Logging in..." : "Login"}
             </button>
@@ -91,10 +105,27 @@ export default function Login({ onLogin }) {
               <label>Email</label>
               <input name="email" type="email" placeholder="you@example.com" value={form.email} onChange={handleChange} />
             </div>
-            <div className="form-group" style={{ marginBottom: 20 }}>
-                <input name="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={form.password} onChange={handleChange} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "🙈" : "👁️"}</button>
-              </div>
+           <div className="form-group" style={{ marginBottom: 14 }}>
+  <label>Password</label>
+
+  <div className="password-input">
+    <input
+      name="password"
+      type={showPassword ? "text" : "password"}
+      placeholder="••••••••"
+      value={form.password}
+      onChange={handleChange}
+    />
+
+    <button
+      type="button"
+      className="password-toggle"
+      onClick={() => setShowPassword(!showPassword)}
+    >
+      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+    </button>
+  </div>
+</div>
             <div className="form-group" style={{ marginBottom: 20 }}>
               <label>Role</label>
               <select name="role" value={form.role} onChange={handleChange}>

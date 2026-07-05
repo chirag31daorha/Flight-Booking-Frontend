@@ -167,7 +167,31 @@ input, select, textarea {
 }
 input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 select option { background: var(--bg2); }
+.password-input {
+  position: relative;
+}
 
+.password-input input {
+  width: 100%;
+  padding-right: 45px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #888;
+}
+
+.password-toggle:hover {
+  color: #00bfff;
+}
 /* ─── Buttons ─── */
 .btn {
   padding: 10px 20px;
@@ -414,6 +438,7 @@ tbody td { padding: 12px 16px; color: var(--text2); }
   flex-shrink: 0;
 }
 .logout-btn:hover { color: var(--red); background: rgba(239,68,68,0.1); }
+
 @media (max-width: 768px) {
   .auth-left { display: none; }
   .auth-right { padding: 32px 24px; }
