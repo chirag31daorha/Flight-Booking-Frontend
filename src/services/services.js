@@ -32,7 +32,7 @@ export const BookingService = {
 };
 
 export const PassengerService = {
-  addPassenger: (data) => API.post('/passenger/add', data),
+  addPassenger: (data, bookingId) => API.post(`/passenger/add?bookingId=${bookingId}`, data),
   getAllPassengers: () => API.get('/passenger/getAll'),
   getPassengerById: (id) => API.get(`/passenger/getById/${id}`),
   getPassengerByContactNo: (contactNumber) => API.get(`/passenger/getByNumber/contactNumber/${contactNumber}`),

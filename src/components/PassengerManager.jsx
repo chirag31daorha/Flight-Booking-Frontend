@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { PassengerService } from "../services/services";
 
-const EMPTY = { name: "", age: "", gender: "MALE", contactNo: "", seatNumber: "" };
+const EMPTY = { name: "", age: "", gender: "MALE", contactNumber: "", seatNumber: "" };
 
-// ✅ Moved OUTSIDE the main component so it isn't recreated on every keystroke
 function PassengerForm({ form, handleChange }) {
   return (
     <div className="form-grid">
@@ -23,7 +22,7 @@ function PassengerForm({ form, handleChange }) {
       </div>
       <div className="form-group">
         <label>Contact No.</label>
-        <input name="contactNo" placeholder="e.g. 9876543210" value={form.contactNo} onChange={handleChange} />
+        <input name="contactNumber" placeholder="e.g. 9876543210" value={form.contactNumber} onChange={handleChange} />
       </div>
       <div className="form-group">
         <label>Seat Number</label>
@@ -47,7 +46,7 @@ function PassengerTable({ data }) {
               <td style={{ color: "var(--accent)", fontFamily: "monospace" }}>#{p.id}</td>
               <td>{p.name}</td><td>{p.age}</td>
               <td><span className={`badge ${p.gender === "MALE" ? "badge-blue" : p.gender === "FEMALE" ? "badge-purple" : "badge-gray"}`}>{p.gender}</span></td>
-              <td>{p.contactNo}</td><td style={{ fontFamily: "monospace" }}>{p.seatNumber}</td>
+              <td>{p.contactNumber}</td><td style={{ fontFamily: "monospace" }}>{p.seatNumber}</td>
             </tr>
           ))}
         </tbody>
@@ -60,6 +59,7 @@ export default function PassengerManager() {
   const [tab, setTab] = useState("add");
   const [passengers, setPassengers] = useState([]);
   const [form, setForm] = useState(EMPTY);
+  const [bookingId, setBookingId] = useState("");
   const [msg, setMsg] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -74,9 +74,13 @@ export default function PassengerManager() {
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleAdd = async () => {
+    if (!bookingId) {
+      setError("Please enter a Booking ID.");
+      return;
+    }
     setLoading(true); setMsg(null);
     try {
-      await PassengerService.addPassenger(form);
+      await PassengerService.addPassenger(form, bookingId);
       setSuccess("Passenger added successfully!");
       setForm(EMPTY);
     } catch (e) {
@@ -156,6 +160,10 @@ export default function PassengerManager() {
       {tab === "add" && (
         <div className="card">
           <div className="card-title">Add New Passenger</div>
+          <div className="form-group" style={{ marginBottom: 16, maxWidth: 200 }}>
+            <label>Booking ID</label>
+            <input placeholder="Enter booking ID" value={bookingId} onChange={e => setBookingId(e.target.value)} />
+          </div>
           <PassengerForm form={form} handleChange={handleChange} />
           <div className="btn-row" style={{ marginTop: 20 }}>
             <button className="btn btn-primary" onClick={handleAdd} disabled={loading}>
