@@ -3,6 +3,59 @@ import { PassengerService } from "../services/services";
 
 const EMPTY = { name: "", age: "", gender: "MALE", contactNo: "", seatNumber: "" };
 
+// ✅ Moved OUTSIDE the main component so it isn't recreated on every keystroke
+function PassengerForm({ form, handleChange }) {
+  return (
+    <div className="form-grid">
+      <div className="form-group">
+        <label>Full Name</label>
+        <input name="name" placeholder="e.g. Rahul Sharma" value={form.name} onChange={handleChange} />
+      </div>
+      <div className="form-group">
+        <label>Age</label>
+        <input name="age" type="number" placeholder="e.g. 28" value={form.age} onChange={handleChange} />
+      </div>
+      <div className="form-group">
+        <label>Gender</label>
+        <select name="gender" value={form.gender} onChange={handleChange}>
+          <option>MALE</option><option>FEMALE</option><option>OTHER</option>
+        </select>
+      </div>
+      <div className="form-group">
+        <label>Contact No.</label>
+        <input name="contactNo" placeholder="e.g. 9876543210" value={form.contactNo} onChange={handleChange} />
+      </div>
+      <div className="form-group">
+        <label>Seat Number</label>
+        <input name="seatNumber" placeholder="e.g. 12A" value={form.seatNumber} onChange={handleChange} />
+      </div>
+    </div>
+  );
+}
+
+// ✅ Also moved OUTSIDE the main component
+function PassengerTable({ data }) {
+  return (
+    <div className="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Name</th><th>Age</th><th>Gender</th><th>Contact</th><th>Seat</th></tr>
+        </thead>
+        <tbody>
+          {data.map(p => (
+            <tr key={p.id}>
+              <td style={{ color: "var(--accent)", fontFamily: "monospace" }}>#{p.id}</td>
+              <td>{p.name}</td><td>{p.age}</td>
+              <td><span className={`badge ${p.gender === "MALE" ? "badge-blue" : p.gender === "FEMALE" ? "badge-purple" : "badge-gray"}`}>{p.gender}</span></td>
+              <td>{p.contactNo}</td><td style={{ fontFamily: "monospace" }}>{p.seatNumber}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function PassengerManager() {
   const [tab, setTab] = useState("add");
   const [passengers, setPassengers] = useState([]);
@@ -84,53 +137,6 @@ export default function PassengerManager() {
     { id: "update", label: "Update" },
   ];
 
-  const PassengerForm = () => (
-    <div className="form-grid">
-      <div className="form-group">
-        <label>Full Name</label>
-        <input name="name" placeholder="e.g. Rahul Sharma" value={form.name} onChange={handleChange} />
-      </div>
-      <div className="form-group">
-        <label>Age</label>
-        <input name="age" type="number" placeholder="e.g. 28" value={form.age} onChange={handleChange} />
-      </div>
-      <div className="form-group">
-        <label>Gender</label>
-        <select name="gender" value={form.gender} onChange={handleChange}>
-          <option>MALE</option><option>FEMALE</option><option>OTHER</option>
-        </select>
-      </div>
-      <div className="form-group">
-        <label>Contact No.</label>
-        <input name="contactNo" placeholder="e.g. 9876543210" value={form.contactNo} onChange={handleChange} />
-      </div>
-      <div className="form-group">
-        <label>Seat Number</label>
-        <input name="seatNumber" placeholder="e.g. 12A" value={form.seatNumber} onChange={handleChange} />
-      </div>
-    </div>
-  );
-
-  const PassengerTable = ({ data }) => (
-    <div className="table-wrapper">
-      <table>
-        <thead>
-          <tr><th>ID</th><th>Name</th><th>Age</th><th>Gender</th><th>Contact</th><th>Seat</th></tr>
-        </thead>
-        <tbody>
-          {data.map(p => (
-            <tr key={p.id}>
-              <td style={{ color: "var(--accent)", fontFamily: "monospace" }}>#{p.id}</td>
-              <td>{p.name}</td><td>{p.age}</td>
-              <td><span className={`badge ${p.gender === "MALE" ? "badge-blue" : p.gender === "FEMALE" ? "badge-purple" : "badge-gray"}`}>{p.gender}</span></td>
-              <td>{p.contactNo}</td><td style={{ fontFamily: "monospace" }}>{p.seatNumber}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-
   return (
     <div>
       <div className="page-header">
@@ -150,7 +156,7 @@ export default function PassengerManager() {
       {tab === "add" && (
         <div className="card">
           <div className="card-title">Add New Passenger</div>
-          <PassengerForm />
+          <PassengerForm form={form} handleChange={handleChange} />
           <div className="btn-row" style={{ marginTop: 20 }}>
             <button className="btn btn-primary" onClick={handleAdd} disabled={loading}>
               {loading ? "Adding..." : "👤 Add Passenger"}
@@ -213,7 +219,7 @@ export default function PassengerManager() {
             <label>Passenger ID to update</label>
             <input placeholder="Enter passenger ID" value={updateId} onChange={e => setUpdateId(e.target.value)} style={{ maxWidth: 200 }} />
           </div>
-          <PassengerForm />
+          <PassengerForm form={form} handleChange={handleChange} />
           <div className="btn-row" style={{ marginTop: 20 }}>
             <button className="btn btn-primary" onClick={handleUpdate} disabled={loading}>
               {loading ? "Updating..." : "✏️ Update Passenger"}
