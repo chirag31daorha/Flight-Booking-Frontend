@@ -1,15 +1,12 @@
 import { useState } from "react";
 import { BookingService } from "../services/services";
 
-export default function BookingManager() {
-  const [tab, setTab] = useState("create");
+export default function BookingManager({ user }) {
+  const [tab, setTab] = useState("all");
   const [bookings, setBookings] = useState([]);
   const [detail, setDetail] = useState(null);
   const [msg, setMsg] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  // Form for create booking
-  const [form, setForm] = useState({ flightId: "", passengerIds: "" });
 
   // Search inputs
   const [searchId, setSearchId] = useState("");
@@ -18,28 +15,10 @@ export default function BookingManager() {
   const [searchStatus, setSearchStatus] = useState("CONFIRMED");
   const [updateId, setUpdateId] = useState("");
   const [updateStatus, setUpdateStatus] = useState("CONFIRMED");
-  const [deleteId, setDeleteId] = useState("");
 
   const setSuccess = (m) => setMsg({ type: "success", text: m });
   const setError = (m) => setMsg({ type: "error", text: m });
   const clearState = () => { setMsg(null); setBookings([]); setDetail(null); };
-
-  const handleCreate = async () => {
-    setLoading(true); setMsg(null);
-    try {
-      // Adjust payload shape to match your Spring Boot endpoint
-      const payload = {
-        flight: { id: Number(form.flightId) },
-        passengers: form.passengerIds.split(",").map(id => ({ id: Number(id.trim()) })),
-      };
-      await BookingService.createBooking(payload);
-      setSuccess("Booking created successfully!");
-      setForm({ flightId: "", passengerIds: "" });
-    } catch (e) {
-      setError(e.response?.data?.message || "Failed to create booking.");
-    }
-    setLoading(false);
-  };
 
   const handleGetAll = async () => {
     setLoading(true); setMsg(null);
@@ -98,7 +77,7 @@ export default function BookingManager() {
   const handleGetPayment = async () => {
     setLoading(true); setMsg(null);
     try {
-      const res = await BookingService.getPaymentDetailsOfBooking(searchId);
+      const res = await BookingService.getPaymentDetails(searchId);
       setDetail({ type: "payment", data: res.data.data });
     } catch { setError("No payment found."); }
     setLoading(false);
@@ -107,17 +86,19 @@ export default function BookingManager() {
   const handleUpdateStatus = async () => {
     setLoading(true); setMsg(null);
     try {
-      await BookingService.updateBookingStatus(updateId, updateStatus);
+      await BookingService.updateBooking({ ...bookings[0], id: updateId, status: updateStatus });
       setSuccess(`Booking #${updateId} status updated to ${updateStatus}!`);
     } catch { setError("Update failed."); }
     setLoading(false);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (id) => {
+    if (!window.confirm(`Delete booking #${id}?`)) return;
     setLoading(true); setMsg(null);
     try {
-      await BookingService.deleteBooking(deleteId);
-      setSuccess(`Booking #${deleteId} deleted!`);
+      await BookingService.deleteBooking(id);
+      setSuccess(`Booking #${id} deleted!`);
+      setBookings(bookings.filter(b => b.id !== id));
     } catch { setError("Delete failed."); }
     setLoading(false);
   };
@@ -128,19 +109,17 @@ export default function BookingManager() {
   };
 
   const tabs = [
-    { id: "create", label: "Create Booking" },
     { id: "all", label: "All Bookings" },
     { id: "search", label: "Search" },
     { id: "details", label: "Passengers & Payment" },
-    { id: "update", label: "Update Status" },
-    { id: "delete", label: "Delete" },
+    ...(user?.role === "ADMIN" ? [{ id: "update", label: "Update Status" }] : []),
   ];
 
   return (
     <div>
       <div className="page-header">
         <h1 className="page-title">📋 Booking Management</h1>
-        <p className="page-subtitle">Create and manage flight bookings</p>
+        <p className="page-subtitle">View and manage flight bookings</p>
       </div>
 
       <div className="section-tabs">
@@ -151,32 +130,6 @@ export default function BookingManager() {
           </button>
         ))}
       </div>
-
-      {/* CREATE */}
-      {tab === "create" && (
-        <div className="card">
-          <div className="card-title">Create New Booking</div>
-          <div className="form-grid">
-            <div className="form-group">
-              <label>Flight ID</label>
-              <input placeholder="e.g. 1" value={form.flightId} onChange={e => setForm({ ...form, flightId: e.target.value })} />
-            </div>
-            <div className="form-group">
-              <label>Passenger IDs (comma separated)</label>
-              <input placeholder="e.g. 1, 2, 3" value={form.passengerIds} onChange={e => setForm({ ...form, passengerIds: e.target.value })} />
-            </div>
-          </div>
-          <div className="btn-row" style={{ marginTop: 20 }}>
-            <button className="btn btn-primary" onClick={handleCreate} disabled={loading}>
-              {loading ? "Creating..." : "📋 Create Booking"}
-            </button>
-          </div>
-          <p style={{ color: "var(--text3)", fontSize: 12, marginTop: 12 }}>
-            💡 The booking date and status are auto-generated by your Spring Boot backend.
-          </p>
-          {msg && <div className={`alert alert-${msg.type === "success" ? "success" : "error"}`}>{msg.text}</div>}
-        </div>
-      )}
 
       {/* ALL */}
       {tab === "all" && (
@@ -189,7 +142,7 @@ export default function BookingManager() {
           {bookings.length > 0 && (
             <div className="table-wrapper">
               <table>
-                <thead><tr><th>ID</th><th>Flight</th><th>Booking Date</th><th>Status</th></tr></thead>
+                <thead><tr><th>ID</th><th>Flight</th><th>Booking Date</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody>
                   {bookings.map(b => (
                     <tr key={b.id}>
@@ -197,6 +150,11 @@ export default function BookingManager() {
                       <td>{b.flight?.airline || `Flight #${b.flight?.id}`}</td>
                       <td>{b.bookingDate || "—"}</td>
                       <td>{statusBadge(b.status)}</td>
+                      <td>
+                        <button className="btn btn-sm btn-danger" onClick={() => handleDelete(b.id)} disabled={loading}>
+                          🗑️ Delete
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -253,7 +211,7 @@ export default function BookingManager() {
               <div className="card-title">Results</div>
               <div className="table-wrapper">
                 <table>
-                  <thead><tr><th>ID</th><th>Flight</th><th>Date</th><th>Status</th></tr></thead>
+                  <thead><tr><th>ID</th><th>Flight</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
                   <tbody>
                     {bookings.map(b => (
                       <tr key={b.id}>
@@ -261,6 +219,11 @@ export default function BookingManager() {
                         <td>{b.flight?.airline || `Flight #${b.flight?.id}`}</td>
                         <td>{b.bookingDate || "—"}</td>
                         <td>{statusBadge(b.status)}</td>
+                        <td>
+                          <button className="btn btn-sm btn-danger" onClick={() => handleDelete(b.id)} disabled={loading}>
+                            🗑️ Delete
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -295,7 +258,7 @@ export default function BookingManager() {
                     {detail.data.map(p => (
                       <tr key={p.id}>
                         <td style={{ color: "var(--accent)" }}>#{p.id}</td>
-                        <td>{p.name}</td><td>{p.age}</td><td>{p.gender}</td><td>{p.contactNo}</td><td>{p.seatNumber}</td>
+                        <td>{p.name}</td><td>{p.age}</td><td>{p.gender}</td><td>{p.contactNumber}</td><td>{p.seatNumber}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -323,8 +286,8 @@ export default function BookingManager() {
         </div>
       )}
 
-      {/* UPDATE STATUS */}
-      {tab === "update" && (
+      {/* UPDATE STATUS - ADMIN ONLY */}
+      {tab === "update" && user?.role === "ADMIN" && (
         <div className="card">
           <div className="card-title">Update Booking Status</div>
           <div className="form-grid">
@@ -342,23 +305,6 @@ export default function BookingManager() {
           <div className="btn-row" style={{ marginTop: 20 }}>
             <button className="btn btn-primary" onClick={handleUpdateStatus} disabled={loading}>
               {loading ? "Updating..." : "✏️ Update Status"}
-            </button>
-          </div>
-          {msg && <div className={`alert alert-${msg.type === "success" ? "success" : "error"}`}>{msg.text}</div>}
-        </div>
-      )}
-
-      {/* DELETE */}
-      {tab === "delete" && (
-        <div className="card">
-          <div className="card-title">Delete Booking</div>
-          <div className="search-row">
-            <div className="form-group">
-              <label>Booking ID</label>
-              <input placeholder="Enter booking ID" value={deleteId} onChange={e => setDeleteId(e.target.value)} />
-            </div>
-            <button className="btn btn-danger" onClick={handleDelete} disabled={loading}>
-              {loading ? "Deleting..." : "🗑 Delete Booking"}
             </button>
           </div>
           {msg && <div className={`alert alert-${msg.type === "success" ? "success" : "error"}`}>{msg.text}</div>}

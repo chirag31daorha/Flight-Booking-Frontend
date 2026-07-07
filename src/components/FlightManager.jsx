@@ -7,8 +7,8 @@ const EMPTY_FORM = {
   totalSeats: "", price: "",
 };
 
-export default function FlightManager() {
-  const [tab, setTab] = useState("add");
+export default function FlightManager({ user }) {
+  const [tab, setTab] = useState("all");
   const [form, setForm] = useState(EMPTY_FORM);
   const [flights, setFlights] = useState([]);
   const [msg, setMsg] = useState(null);
@@ -86,10 +86,13 @@ export default function FlightManager() {
   const handleUpdate = async () => {
     setLoading(true); setMsg(null);
     try {
-      await FlightService.updateFlight(updateId, form);
+      // Fix: pass id inside form object
+      await FlightService.updateFlight({ ...form, id: updateId });
       setSuccess(`Flight ${updateId} updated!`);
+      setForm(EMPTY_FORM);
+      setUpdateId("");
     } catch (e) {
-      setError("Update failed.");
+      setError(e.response?.data?.message || "Update failed.");
     }
     setLoading(false);
   };
@@ -100,18 +103,22 @@ export default function FlightManager() {
       await FlightService.deleteFlight(deleteId);
       setSuccess(`Flight ${deleteId} deleted!`);
       setFlights(flights.filter(f => f.id != deleteId));
+      setDeleteId("");
     } catch (e) {
-      setError("Delete failed.");
+      setError(e.response?.data?.message || "Delete failed.");
     }
     setLoading(false);
   };
 
+  // Role-based tabs
   const tabs = [
-    { id: "add", label: "Add Flight" },
     { id: "all", label: "All Flights" },
     { id: "search", label: "Search" },
-    { id: "update", label: "Update" },
-    { id: "delete", label: "Delete" },
+    ...(user?.role === "ADMIN" ? [
+      { id: "add", label: "Add Flight" },
+      { id: "update", label: "Update" },
+      { id: "delete", label: "Delete" },
+    ] : []),
   ];
 
   const getStatusBadge = (seats) => {
@@ -124,7 +131,9 @@ export default function FlightManager() {
     <div>
       <div className="page-header">
         <h1 className="page-title">✈ Flight Management</h1>
-        <p className="page-subtitle">Add, view, search, update and delete flights</p>
+        <p className="page-subtitle">
+          {user?.role === "ADMIN" ? "Add, view, search, update and delete flights" : "View and search available flights"}
+        </p>
       </div>
 
       <div className="section-tabs">
@@ -135,8 +144,8 @@ export default function FlightManager() {
         ))}
       </div>
 
-      {/* ADD FLIGHT */}
-      {tab === "add" && (
+      {/* ADD FLIGHT - ADMIN ONLY */}
+      {tab === "add" && user?.role === "ADMIN" && (
         <div className="card">
           <div className="card-title">Add New Flight</div>
           <div className="form-grid">
@@ -281,8 +290,8 @@ export default function FlightManager() {
         </div>
       )}
 
-      {/* UPDATE */}
-      {tab === "update" && (
+      {/* UPDATE - ADMIN ONLY */}
+      {tab === "update" && user?.role === "ADMIN" && (
         <div className="card">
           <div className="card-title">Update Flight</div>
           <div className="form-group" style={{ marginBottom: 16 }}>
@@ -328,8 +337,8 @@ export default function FlightManager() {
         </div>
       )}
 
-      {/* DELETE */}
-      {tab === "delete" && (
+      {/* DELETE - ADMIN ONLY */}
+      {tab === "delete" && user?.role === "ADMIN" && (
         <div className="card">
           <div className="card-title">Delete Flight</div>
           <p style={{ color: "var(--text2)", fontSize: 14, marginBottom: 16 }}>

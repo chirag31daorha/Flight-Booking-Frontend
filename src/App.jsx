@@ -7,14 +7,6 @@ import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
 import "./App.css";
 
-const NAV_ITEMS = [
-  { id: "dashboard", label: "Dashboard", icon: "⊞" },
-  { id: "flights", label: "Flights", icon: "✈" },
-  { id: "bookings", label: "Bookings", icon: "📋" },
-  { id: "passengers", label: "Passengers", icon: "👤" },
-  { id: "payments", label: "Payments", icon: "💳" },
-];
-
 function parseToken(token) {
   try {
     return JSON.parse(atob(token.split('.')[1]));
@@ -29,23 +21,34 @@ export default function App() {
 
   const token = localStorage.getItem("jwt_token");
   const user = token ? parseToken(token) : null;
-  // user.sub = email, user.role = "USER" or "ADMIN"
+  // user.sub = email, user.role = "ADMIN" or "USER"
+
+  // Build NAV_ITEMS dynamically based on role
+  const NAV_ITEMS = [
+    { id: "dashboard", label: "Dashboard", icon: "⊞" },
+    ...(user?.role === "ADMIN" ? [{ id: "flights", label: "Flights", icon: "✈" }] : []),
+    { id: "bookings", label: "Bookings", icon: "📋" },
+    { id: "passengers", label: "Passengers", icon: "👤" },
+    { id: "payments", label: "Payments", icon: "💳" },
+  ];
 
   const handleLogin = () => setIsLoggedIn(true);
 
   const handleLogout = () => {
     localStorage.removeItem("jwt_token");
     setIsLoggedIn(false);
+    setActiveTab("dashboard");
   };
 
   const renderContent = () => {
     switch (activeTab) {
-      case "dashboard": return <Dashboard setActiveTab={setActiveTab} />;
-      case "flights": return <FlightManager />;
-      case "bookings": return <BookingManager />;
-      case "passengers": return <PassengerManager />;
-      case "payments": return <PaymentManager />;
-      default: return <Dashboard setActiveTab={setActiveTab} />;
+      case "dashboard": return <Dashboard setActiveTab={setActiveTab} user={user} />;
+      case "flights": 
+        return user?.role === "ADMIN" ? <FlightManager user={user} /> : <Dashboard setActiveTab={setActiveTab} user={user} />;
+      case "bookings": return <BookingManager user={user} />;
+      case "passengers": return <PassengerManager user={user} />;
+      case "payments": return <PaymentManager user={user} />;
+      default: return <Dashboard setActiveTab={setActiveTab} user={user} />;
     }
   };
 
